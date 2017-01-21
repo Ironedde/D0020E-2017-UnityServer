@@ -3,10 +3,12 @@
   "version": "0.0.1",
   "description": "Dummy server for d0020e",
   "author": "Johan Jatko <johjat-4@student.ltu.se>",
-  "contributors": [{
-    "name": "Johan Jatko",
-    "email": "johjat-4@student.ltu.se"
-  }],
+  "contributors": [
+    {
+      "name": "Johan Jatko",
+      "email": "johjat-4@student.ltu.se"
+    }
+  ],
   "bin": {
     "module-name": "./bin/server"
   },
@@ -14,9 +16,9 @@
     "start": "node server.js"
   },
   "main": "lib/server.js",
-  "keywords": [
-  ],
+  "keywords": [],
   "dependencies": {
+    "socket.io": "^1.7.2"
   },
   "preferGlobal": true,
   "private": true,
