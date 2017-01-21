@@ -1,0 +1,24 @@
+{
+  "name": "d0020e-server",
+  "version": "0.0.1",
+  "description": "Dummy server for d0020e",
+  "author": "Johan Jatko <johjat-4@student.ltu.se>",
+  "contributors": [{
+    "name": "Johan Jatko",
+    "email": "johjat-4@student.ltu.se"
+  }],
+  "bin": {
+    "module-name": "./bin/server"
+  },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "main": "lib/server.js",
+  "keywords": [
+  ],
+  "dependencies": {
+  },
+  "preferGlobal": true,
+  "private": true,
+  "license": "MIT"
+}
