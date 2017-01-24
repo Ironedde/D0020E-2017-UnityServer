@@ -1,15 +1,9 @@
 var http = require('http');
 
-function handler(req, res) {
-  res.writeHead(200);
-  res.end(data);
-}
-var app = http.createServer(handler);
-var io = require('socket.io')(app);
+var io = require('socket.io')
+var socket = io.listen(3001);
 console.log("starting server");
 
-io.on('connection', function(socket) {
+socket.on('connection', function(socket) {
   console.log("connected!");
 });
-
-app.listen(3001);
