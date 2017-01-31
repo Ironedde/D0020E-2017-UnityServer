@@ -5,6 +5,7 @@ var app = require('express')(); // Set up express and socket.io along with the J
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var path = require('path');
+var ndo = require('./network_data_object').NetworkDataObject;
 
 // The *sigh* global clients object
 var clients = {};
@@ -44,14 +45,16 @@ io.on('connection', function(socket){
         delete clients[socket.id]; // TODO: Create persistance logic
     });
 
-    socket.on('translate', function(offsets) { // Handle translation events from the clients
+    // Keep this for old time's sake. Will break some old code if changed/removed. Beware.
+    socket.on('translate', function(offsets, cb) { // Handle translation events from the clients
         clients[socket.id].x += offsets.x; // TODO: Error checking
         clients[socket.id].y += offsets.y;
         console.log(socket.id + " : " + JSON.stringify(clients[socket.id]));
+        if (cb) cb({ /* Nada */});
     });
 
     // Tar emot data på formen {x:number, y:number, z:number}
-    socket.on('set position', function(position) {
+    socket.on('set position', function(position, cb) {
         var x = position.x || 0; // Guard against unset variables
         var y = position.y || 0;
         var z = position.z || 0;
@@ -59,29 +62,56 @@ io.on('connection', function(socket){
         clients[socket.id].y = assureNumber(y, 0); // Should the server throw exceptions instead?
         clients[socket.id].z = assureNumber(z, 1);
         console.log(clients[socket.id]);
+        if (cb) cb();
     });
 
     // Tar inte emot någon data. Allt i params ignoreras
-    socket.on('get position', function(params) {
+    /*socket.on('get position', function(params) {
         var c = clients[socket.id]; // Keep from returning other fields if the object is extended.
         socket.emit('get position', {x:c.x, y:c.y, z:c.z});
+    });*/
+
+    ndo.define(socket, "position", {
+        get: function(id, cb) {
+            var c = clients[socket.id]; // Keep from returning other fields if the object is extended.
+            if (cb) cb({x:c.x, y:c.y, z:c.z});
+        },
+        list: function(id, cb) { // same as the old "positions" call
+            cb(JSON.stringify(clients));
+        },
+        /*set: function(position, cb) { // Because
+            console.log("set position from " + socket.id);
+            var x = position.x || 0; // Guard against unset variables
+            var y = position.y || 0;
+            var z = position.z || 0;
+            clients[socket.id].x = assureNumber(x, 0); // Guard against non-numeric types
+            clients[socket.id].y = assureNumber(y, 0); // Should the server throw exceptions instead?
+            clients[socket.id].z = assureNumber(z, 1);
+            if (cb) cb();
+        },*/
+        update: function(offsets, cb) { // Currently the same as the old translate
+            clients[socket.id].x += offsets.x; // TODO: Error checking
+            clients[socket.id].y += offsets.y;
+            console.log(socket.id + " : " + JSON.stringify(clients[socket.id]));
+            cb({ /* Nada */});
+        }
     });
 
     // Tar inte emot någon data
-    socket.on('positions', function(params) { // Send the position of everyone over a socket.
+    /*socket.on('positions', function(params) { // Send the position of everyone over a socket.
         // TODO: Add authentication. Absolutely anyone can know where everyone else is at the moment
         socket.emit('positions', JSON.stringify(clients));
-    });
+    });*/
 
     // Tar inte emot någon data
-    socket.on('get clients', function(params) {
+    socket.on('get clients', function(params, cb) {
         console.log("get clients");
         console.log(Object.keys(clients));
-       socket.emit('clients', {clients: Object.keys(clients)});
+        cb({clients: Object.keys(clients)});
     });
 
     // Tar emot data på formatet {to:string, msg:string} där to är valfritt. Saknas to tolkas meddelandet som globalt
-    socket.on('send message', function(params) {
+    socket.on('send message', function(params, cb) {
         var to = params.to;
         var msg = {from: socket.id, msg: params.msg};
         var ph = null;
@@ -91,6 +121,7 @@ io.on('connection', function(socket){
             ph = io.sockets.sockets[to] || socket;
         }
         ph.emit('message', msg);
+        cb({success:1});
     });
 
     console.log(clients);
