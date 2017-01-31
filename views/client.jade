@@ -56,18 +56,6 @@ html
         script(src='http://code.jquery.com/jquery-1.11.1.js')
         script.
             var io = io(window.location.origin);
-            io.on('get position', function(pos) {
-                $("#cx").html(pos.x); // TODO: Make some error checking?
-                $("#cy").html(pos.y);
-                $("#cz").html(pos.z);
-            });
-            io.on('clients', function(arg) {
-                var clients = arg.clients;
-                $("#cclients").html('<option value="" selected>&lt;ALLA&gt;</option>');
-                for (i = 0; i < arg.clients.length; i++) {
-                    $("#cclients").append('<option value="'+clients[i]+'">'+clients[i]+'</option>');
-                }
-            });
             io.on('message', function(arg) {
                 console.log(arg);
                 $("#msgbox").html(arg.msg);
@@ -87,20 +75,33 @@ html
                 }
                 $("#x").html(tr.x);
                 $("#y").html(tr.y);
-                io.emit('translate', tr);
+                io.emit('translate', tr, function() {});
                 //io.emit('get position', {});
             });
             $('#position').submit(function () {
-                io.emit('set position', {x:Number($("#px").val()), y:Number($("#py").val()), z:Number($("#pz").val())});
+                io.emit('update position', {x:Number($("#px").val()), y:Number($("#py").val()), z:Number($("#pz").val())},
+                function() {
+                    // Do something, anything.
+                });
                 return false;
             });
             $("#currpos").submit(function() {
-                io.emit('get position', {});
+                io.emit('get position', {}, function (pos) {
+                    $("#cx").html(pos.x); // TODO: Make some error checking?
+                    $("#cy").html(pos.y);
+                    $("#cz").html(pos.z);
+                });
                 return false;
             });
             $("#getclients").click(function (asd) {
                 console.log("click happened");
-                io.emit('get clients', {});
+                io.emit('get clients', {}, function (arg) {
+                    var clients = arg.clients;
+                    $("#cclients").html('<option value="" selected>&lt;ALLA&gt;</option>');
+                    for (i = 0; i < arg.clients.length; i++) {
+                        $("#cclients").append('<option value="' + clients[i] + '">' + clients[i] + '</option>');
+                    }
+                });
                 return false;
             });
             $("#submitmessage").submit(function() {

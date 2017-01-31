@@ -79,21 +79,15 @@ io.on('connection', function(socket){
         list: function(id, cb) { // same as the old "positions" call
             cb(JSON.stringify(clients));
         },
-        /*set: function(position, cb) { // Because
-            console.log("set position from " + socket.id);
+        update: function(position, cb) { // Currently the same as the old set position
             var x = position.x || 0; // Guard against unset variables
             var y = position.y || 0;
             var z = position.z || 0;
             clients[socket.id].x = assureNumber(x, 0); // Guard against non-numeric types
             clients[socket.id].y = assureNumber(y, 0); // Should the server throw exceptions instead?
             clients[socket.id].z = assureNumber(z, 1);
+            console.log(clients[socket.id]);
             if (cb) cb();
-        },*/
-        update: function(offsets, cb) { // Currently the same as the old translate
-            clients[socket.id].x += offsets.x; // TODO: Error checking
-            clients[socket.id].y += offsets.y;
-            console.log(socket.id + " : " + JSON.stringify(clients[socket.id]));
-            cb({ /* Nada */});
         }
     });
 
