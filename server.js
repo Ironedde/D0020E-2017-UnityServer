@@ -1,15 +1,25 @@
 var http = require('http');
+var NetworkDataObject = require('./network_data_object').NetworkDataObject;
 
-function handler(req, res) {
-  res.writeHead(200);
-  res.end(data);
-}
-var app = http.createServer(handler);
-var io = require('socket.io')(app);
+var io = require('socket.io')
+var socket = io.listen(3001);
 console.log("starting server");
 
-io.on('connection', function(socket) {
-  console.log("connected!");
+socket.on('connection', function(socket) {
+  console.log('connected');
+  socket.on('message', function(data) {
+    console.log(data);
+  });
+  NetworkDataObject.define(socket, 'Task', {
+    get: function(id, callback) {
+      console.log('get Task by id ' + id);
+      callback({
+        'Id': id,
+        'Title': 'Name: ' + id
+      });
+    },
+    list: function(d, callback) {
+      callback(['test']);
+    }
+  })
 });
-
-app.listen(3000);
