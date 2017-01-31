@@ -7,6 +7,13 @@ var ndo = {
     socket.on('create ' + name, objs.create || function() {});
     socket.on('update ' + name, objs.update || function() {});
     socket.on('delete ' + name, objs.delete || function() {});
+
+    return {
+      update: function(data) {
+        socket.emit('update ' + name, data);
+      }
+    }
   }
 };
+
 exports.NetworkDataObject = ndo;
