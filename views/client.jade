@@ -55,7 +55,7 @@ html
         script(src='/socket.io/socket.io.js')
         script(src='http://code.jquery.com/jquery-1.11.1.js')
         script.
-            var io = io(window.location.origin);
+            var io = io.connect(window.location.origin);
             io.on('message', function(arg) {
                 console.log(arg);
                 $("#msgbox").html(arg.msg);
@@ -76,17 +76,17 @@ html
                 $("#x").html(tr.x);
                 $("#y").html(tr.y);
                 io.emit('translate', tr, function() {});
-                //io.emit('get position', {});
+                //io.emit('get Position', {});
             });
             $('#position').submit(function () {
-                io.emit('update position', {x:Number($("#px").val()), y:Number($("#py").val()), z:Number($("#pz").val())},
+                io.emit('update Position', {x:Number($("#px").val()), y:Number($("#py").val()), z:Number($("#pz").val())},
                 function() {
                     // Do something, anything.
                 });
                 return false;
             });
             $("#currpos").submit(function() {
-                io.emit('get position', {}, function (pos) {
+                io.emit('get Position', {}, function (pos) {
                     $("#cx").html(pos.x); // TODO: Make some error checking?
                     $("#cy").html(pos.y);
                     $("#cz").html(pos.z);

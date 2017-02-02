@@ -3,8 +3,10 @@
 
 var app = require('express')(); // Set up express and socket.io along with the Jade view engine
 var http = require('http').Server(app);
-var io = require('socket.io')(http);
+var soio = require('socket.io');
 var path = require('path');
+var debug = require('./debug');
+var pos = require('./positions');
 var ndo = require('./network_data_object').NetworkDataObject;
 
 // The *sigh* global clients object
@@ -13,6 +15,7 @@ var clients = {};
 app.set('views', path.join(__dirname, 'views')); // Set up the pathing to the views folder
 app.set('view engine', 'jade');
 
+var io = soio.listen(http);
 var defport = 3077;
 
 process.argv.forEach(function (val, index, array) { // Just set the current port to the last argument
@@ -20,20 +23,27 @@ process.argv.forEach(function (val, index, array) { // Just set the current port
     defport = val;
 });
 
-// Assure that 'x' is of the type 'type', otherwise default to 'dx'
-function assureType(type, x, dx) {
-    var rv = x;
-    console.log(rv + " = number");
-    if (typeof rv !== type) {
-        rv = dx;
+var Position = ndo.define(io, "Position", {
+    get: function(id, cb) {
+        var c = clients[socket.id]; // Keep from returning other fields if the object is extended.
+        if (cb) cb({x:c.x, y:c.y, z:c.z});
+    },
+    list: function(id, cb) { // same as the old "positions" call
+        console.log(JSON.stringify(clients));
+        cb(JSON.stringify(clients));
+    },
+    update: function(position, cb) { // Currently the same as the old set position
+        var x = position.x || 0; // Guard against unset variables
+        var y = position.y || 0;
+        var z = position.z || 0;
+        console.log(debug);
+        clients[socket.id].x = debug.assureNumber(x, 0); // Guard against non-numeric types
+        clients[socket.id].y = debug.assureNumber(y, 0); // Should the server throw exceptions instead?
+        clients[socket.id].z = debug.assureNumber(z, 0);
+        console.log(clients[socket.id]);
+        if (cb) cb(true);
     }
-    return rv;
-}
-
-// Shorthand of assureType for numbers
-function assureNumber(x, dx) {
-    return assureType("number", x, dx);
-}
+});
 
 io.on('connection', function(socket){
     console.log('a user connected: ' + socket.id);
@@ -54,13 +64,14 @@ io.on('connection', function(socket){
     });
 
     // Tar emot data på formen {x:number, y:number, z:number}
-    socket.on('set position', function(position, cb) {
+    socket.on('set Position', function(position, cb) {
         var x = position.x || 0; // Guard against unset variables
         var y = position.y || 0;
         var z = position.z || 0;
-        clients[socket.id].x = assureNumber(x, 0); // Guard against non-numeric types
-        clients[socket.id].y = assureNumber(y, 0); // Should the server throw exceptions instead?
-        clients[socket.id].z = assureNumber(z, 1);
+        console.log(debug);
+        clients[socket.id].x = debug.assureNumber(x, 0); // Guard against non-numeric types
+        clients[socket.id].y = debug.assureNumber(y, 0); // Should the server throw exceptions instead?
+        clients[socket.id].z = debug.assureNumber(z, 0);
         console.log(clients[socket.id]);
         if (cb) cb();
     });
@@ -71,25 +82,8 @@ io.on('connection', function(socket){
         socket.emit('get position', {x:c.x, y:c.y, z:c.z});
     });*/
 
-    ndo.define(socket, "position", {
-        get: function(id, cb) {
-            var c = clients[socket.id]; // Keep from returning other fields if the object is extended.
-            if (cb) cb({x:c.x, y:c.y, z:c.z});
-        },
-        list: function(id, cb) { // same as the old "positions" call
-            cb(JSON.stringify(clients));
-        },
-        update: function(position, cb) { // Currently the same as the old set position
-            var x = position.x || 0; // Guard against unset variables
-            var y = position.y || 0;
-            var z = position.z || 0;
-            clients[socket.id].x = assureNumber(x, 0); // Guard against non-numeric types
-            clients[socket.id].y = assureNumber(y, 0); // Should the server throw exceptions instead?
-            clients[socket.id].z = assureNumber(z, 1);
-            console.log(clients[socket.id]);
-            if (cb) cb();
-        }
-    });
+    Position.serve(socket);
+
 
     // Tar inte emot någon data
     /*socket.on('positions', function(params) { // Send the position of everyone over a socket.
@@ -115,7 +109,7 @@ io.on('connection', function(socket){
             ph = io.sockets.sockets[to] || socket;
         }
         ph.emit('message', msg);
-        cb({success:1});
+        if (cb) cb({});
     });
 
     console.log(clients);
