@@ -79,14 +79,14 @@ html
                 //io.emit('get Position', {});
             });
             $('#position').submit(function () {
-                io.emit('update Position', {x:Number($("#px").val()), y:Number($("#py").val()), z:Number($("#pz").val())},
+                io.emit('Position.update', {x:Number($("#px").val()), y:Number($("#py").val()), z:Number($("#pz").val())},
                 function() {
                     // Do something, anything.
                 });
                 return false;
             });
             $("#currpos").submit(function() {
-                io.emit('get Position', {}, function (pos) {
+                io.emit('Position.get', {}, function (pos) {
                     $("#cx").html(pos.x); // TODO: Make some error checking?
                     $("#cy").html(pos.y);
                     $("#cz").html(pos.z);

@@ -25,7 +25,7 @@ process.argv.forEach(function (val, index, array) { // Just set the current port
 
 var Position = ndo.define(io, "Position", {
     get: function(id, cb) {
-        var c = clients[socket.id]; // Keep from returning other fields if the object is extended.
+        var c = clients[this.id]; // Keep from returning other fields if the object is extended.
         if (cb) cb({x:c.x, y:c.y, z:c.z});
     },
     list: function(id, cb) { // same as the old "positions" call
@@ -37,10 +37,10 @@ var Position = ndo.define(io, "Position", {
         var y = position.y || 0;
         var z = position.z || 0;
         console.log(debug);
-        clients[socket.id].x = debug.assureNumber(x, 0); // Guard against non-numeric types
-        clients[socket.id].y = debug.assureNumber(y, 0); // Should the server throw exceptions instead?
-        clients[socket.id].z = debug.assureNumber(z, 0);
-        console.log(clients[socket.id]);
+        clients[this.id].x = debug.assureNumber(x, 0); // Guard against non-numeric types
+        clients[this.id].y = debug.assureNumber(y, 0); // Should the server throw exceptions instead?
+        clients[this.id].z = debug.assureNumber(z, 0);
+        console.log(clients[this.id]);
         if (cb) cb(true);
     }
 });
