@@ -6,7 +6,6 @@ var http = require('http').Server(app);
 var soio = require('socket.io');
 var path = require('path');
 var debug = require('./debug');
-var pos = require('./positions');
 var ndo = require('./network_data_object').NetworkDataObject;
 
 // The *sigh* global clients object
