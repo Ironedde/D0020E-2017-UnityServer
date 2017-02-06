@@ -25,24 +25,33 @@ process.argv.forEach(function (val, index, array) { // Just set the current port
 var Position = ndo.define(io, "Position", {
     get: function(id, cb) {
         var c = clients[this.id]; // Keep from returning other fields if the object is extended.
-        if (cb) cb({x:c.x, y:c.y, z:c.z});
+        if (cb) cb({id:this.id, x:c.x, y:c.y, z:c.z});
     },
     list: function(id, cb) { // same as the old "positions" call
         console.log(JSON.stringify(clients));
-        cb(JSON.stringify(clients));
+        if (cb)  cb(JSON.stringify(clients));
     },
     update: function(position, cb) { // Currently the same as the old set position
+        var id = position.id || this.id; // Default to own connection
         var x = position.x || 0; // Guard against unset variables
         var y = position.y || 0;
         var z = position.z || 0;
+        if (!(id in clients)) { // The id was not set or not found
+            console.log("Could not find " + id + " in clients. Available ID:s are ");
+            console.log(clients);
+            if (cb) cb(false);
+            return;
+        }
         console.log(debug);
-        clients[this.id].x = debug.assureNumber(x, 0); // Guard against non-numeric types
-        clients[this.id].y = debug.assureNumber(y, 0); // Should the server throw exceptions instead?
-        clients[this.id].z = debug.assureNumber(z, 0);
-        console.log(clients[this.id]);
+        clients[id].x = debug.assureNumber(x, 0); // Guard against non-numeric types
+        clients[id].y = debug.assureNumber(y, 0); // Should the server throw exceptions instead?
+        clients[id].z = debug.assureNumber(z, 0);
+        console.log(id+":"+clients[id] + " from " + this.id);
         if (cb) cb(true);
     }
 });
+
+
 
 io.on('connection', function(socket){
     console.log('a user connected: ' + socket.id);
