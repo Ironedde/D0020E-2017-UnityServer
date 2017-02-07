@@ -101,12 +101,12 @@ html
                 });
                 return false;
             });
-            $("#getclients").click(function (asd) {
+            $("#getclients").click(function (arg) {
                 console.log("click happened");
-                io.emit('get clients', {}, function (arg) {
-                    var clients = arg.clients;
+                io.emit('get clients', {}, function (asd) {
+                    var clients = JSON.parse(asd);
                     $("#cclients").html('<option value="" selected>&lt;ALLA&gt;</option>');
-                    for (i = 0; i < arg.clients.length; i++) {
+                    for (i = 0; i < clients.length; i++) {
                         $("#cclients").append('<option value="' + clients[i] + '">' + clients[i] + '</option>');
                     }
                 });
