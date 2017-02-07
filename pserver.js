@@ -74,7 +74,7 @@ var Person = ndo.define(io, "Person", {
 io.on('connection', function(socket){
     console.log('a user connected: ' + socket.id);
 
-    clients[socket.id] = {x:0,y:0,z:1}; // Will use socket id as the identifier for the clients. simple enough.
+    clients[socket.id] = {x:0,y:2,z:1}; // Will use socket id as the identifier for the clients. simple enough.
 
     socket.on('disconnect', function() { // remove the disconnected client
         console.log(socket.id + " disconnected");
@@ -85,6 +85,7 @@ io.on('connection', function(socket){
     socket.on('translate', function(offsets, cb) { // Handle translation events from the clients
         clients[socket.id].x += offsets.x; // TODO: Error checking
         clients[socket.id].y += offsets.y;
+        clients[socket.id].z += offsets.z;
         console.log(socket.id + " : " + JSON.stringify(clients[socket.id]));
         if (cb) cb({ /* Nada */});
     });

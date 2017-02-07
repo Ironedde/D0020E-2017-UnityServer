@@ -10,7 +10,7 @@ html
         p Nuvarande translation:
             span  x=
                 span#x 0
-            span  y=
+            span  z=
                 span#y 0
         form#position
             label x=
@@ -69,19 +69,19 @@ html
               });
             });
             $(document).keydown(function(event){
-                var tr = {x:0,y:0};
+                var tr = {x:0,y:0,z:0};
                 var amt = 1;
                 if (event.key == "w") {
-                    tr.y += amt;
+                    tr.z += amt;
                 } else if (event.key == "a") {
                     tr.x -= amt;
                 } else if (event.key == "s") {
-                    tr.y -= amt;
+                    tr.z -= amt;
                 } else if (event.key == "d") {
                     tr.x += amt;
                 }
                 $("#x").html(tr.x);
-                $("#y").html(tr.y);
+                $("#y").html(tr.z);
                 io.emit('translate', tr, function() {});
                 //io.emit('get Position', {});
             });
