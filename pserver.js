@@ -22,16 +22,34 @@ process.argv.forEach(function (val, index, array) { // Just set the current port
     defport = val;
 });
 
-var Position = ndo.define(io, "Position", {
+var Person = ndo.define(io, "Person", {
+    you: function(id, cb) {
+      cb([this.id]);
+    },
     get: function(id, cb) {
-        var c = clients[this.id]; // Keep from returning other fields if the object is extended.
-        if (cb) cb({id:this.id, x:c.x, y:c.y, z:c.z});
+        //var c = clients[this.id]; // Keep from returning other fields if the object is extended.
+        //if (cb) cb({'Id':this.id, 'Position':{'X':c.x, 'Y':c.y, 'Z':c.z}});
+        /*if (typeof param == "undefined" || param == null || !(param in clients)) {
+            id = this.id;
+        }*/
+        console.log(id)
+        var c = clients[id];
+        cb({
+          'Id':id,
+          'RawLocation':{'X':c.x,'Y':c.y,'Z':c.z}
+        });
     },
     list: function(id, cb) { // same as the old "positions" call
-        console.log(JSON.stringify(clients));
-        if (cb)  cb(JSON.stringify(clients));
+        var arr = []
+        for (id in clients){
+          arr.push(id);
+        }
+        cb(arr);
+        //console.log(JSON.stringify(clients));
+        //if (cb)  cb(JSON.stringify(clients));
     },
     update: function(position, cb) { // Currently the same as the old set position
+        console.log("Got update");
         var id = position.id || this.id; // Default to own connection
         var x = position.x || 0; // Guard against unset variables
         var y = position.y || 0;
@@ -90,7 +108,7 @@ io.on('connection', function(socket){
         socket.emit('get position', {x:c.x, y:c.y, z:c.z});
     });*/
 
-    Position.serve(socket);
+    Person.serve(socket);
 
 
     // Tar inte emot någon data

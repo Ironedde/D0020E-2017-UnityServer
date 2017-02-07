@@ -10,6 +10,9 @@ var ndo = {
         socket.join(name + "." + id);
       },
       serve: function(socket) {
+        //Added by edvin
+        socket.on(name + ".you", objs.you || function() {});
+        //
         socket.on(name + ".get", objs.get || function() {});
         socket.on(name + ".list", objs.list || function() {});
         socket.on(name + ".create", objs.create || function() {});

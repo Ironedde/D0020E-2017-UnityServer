@@ -55,11 +55,18 @@ html
         script(src='/socket.io/socket.io.js')
         script(src='http://code.jquery.com/jquery-1.11.1.js')
         script.
+            var connectionId = "";
             var io = io.connect(window.location.origin);
             io.on('message', function(arg) {
                 console.log(arg);
                 $("#msgbox").html(arg.msg);
                 $("#from").html(arg.from);
+            });
+            $(document).ready(function(){
+              io.emit("Person.you",{},function (data){
+                connectionId = data[0];
+                console.log(data[0]);
+              });
             });
             $(document).keydown(function(event){
                 var tr = {x:0,y:0};
@@ -79,17 +86,18 @@ html
                 //io.emit('get Position', {});
             });
             $('#position').submit(function () {
-                io.emit('Position.update', {x:Number($("#px").val()), y:Number($("#py").val()), z:Number($("#pz").val())},
+                io.emit('Person.update', {id:connectionId,x:Number($("#px").val()), y:Number($("#py").val()), z:Number($("#pz").val())},
                 function() {
+                    console.log("Update recived");
                     // Do something, anything.
                 });
                 return false;
             });
             $("#currpos").submit(function() {
-                io.emit('Position.get', {}, function (pos) {
-                    $("#cx").html(pos.x); // TODO: Make some error checking?
-                    $("#cy").html(pos.y);
-                    $("#cz").html(pos.z);
+                io.emit('Person.get', connectionId, function (data) {
+                    $("#cx").html(data["RawLocation"].X); // TODO: Make some error checking?
+                    $("#cy").html(data["RawLocation"].Y);
+                    $("#cz").html(data["RawLocation"].Z);
                 });
                 return false;
             });
