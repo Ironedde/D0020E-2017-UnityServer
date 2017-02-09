@@ -104,7 +104,8 @@ html
             $("#getclients").click(function (arg) {
                 console.log("click happened");
                 io.emit('get clients', {}, function (asd) {
-                    var clients = JSON.parse(asd);
+                    console.log(asd);
+                    var clients = asd.clients;
                     $("#cclients").html('<option value="" selected>&lt;ALLA&gt;</option>');
                     for (i = 0; i < clients.length; i++) {
                         $("#cclients").append('<option value="' + clients[i] + '">' + clients[i] + '</option>');

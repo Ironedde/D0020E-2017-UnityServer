@@ -157,7 +157,7 @@ io.on('connection', function(socket){
     socket.on('get clients', function(params, cb) {
         console.log("get clients");
         console.log(Object.keys(clients));
-        cb({clients: Object.keys(clients)});
+        cb({clients:Object.keys(clients)});
     });
 
     // Tar emot data på formatet {to:string, msg:string} där to är valfritt. Saknas to tolkas meddelandet som globalt
