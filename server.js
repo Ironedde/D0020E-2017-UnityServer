@@ -10,6 +10,7 @@ var achivement1 = {
   'UserId': 'test-user',
   'Completed': 10,
   'Needed': 100,
+  'Title': "Super cool achievement",
   'Information': "info1"
 };
 var achivement2 = {
@@ -17,6 +18,7 @@ var achivement2 = {
   'UserId': 'test-user',
   'Completed': 20,
   'Needed': 100,
+  'Title': "Super cool achievement number 2",
   'Information': "info1"
 };
 var Achievement = ndo.define(io, 'Achievement', {
@@ -38,6 +40,8 @@ var badge1 = {
   'UserId': 'test-user',
   'Completed': 30,
   'Maximum': 100,
+  'Title': "Super badge",
+  'Information': "Just another badge",
   'SpriteId': 1
 };
 var badge2 = {
@@ -45,6 +49,8 @@ var badge2 = {
   'UserId': 'test-user',
   'Completed': 40,
   'Maximum': 100,
+  'Title': "Super badge number 2",
+  'Information': "Just another badge number 2",
   'SpriteId': 4
 };
 var Badge = ndo.define(io, 'Badge', {
@@ -68,16 +74,35 @@ var leaderboard_user = {
   'Position': 1
 };
 
+
+var subtask1 = {
+  'Id': "123",
+  'RawStatus': 0,
+  'Title': "subtaskTitle",
+  'IsBonus': true,
+  'Xp': 30,
+  'Information': "Lite info om denna subtask",
+  'Warning': "DO NOT TOUCH THE CAT",
+  'Tools': [tool1, tool1]
+}
+
+
+var test_leaderboard = {
+  'Id': 'test-leaderboard',
+  'Title': 'swag1',
+  'LeaderboardUsers': [leaderboard_user, leaderboard_user, leaderboard_user]
+};
+
 var Leaderboard = ndo.define(io, 'Leaderboard', {
   get: function(id, callback) {
     callback({
       'Id': id,
       'Title': 'Swag',
-      'LeaderboardUsers': [leaderboard_user]
+      'LeaderboardUsers': [leaderboard_user, leaderboard_user, leaderboard_user]
     });
   },
   list: function(d, callback) {
-    callback(['test-leaderboard']);
+    callback(['test-leaderboard', 'test-leaderboard', 'test-leaderboard']);
   }
 });
 
@@ -90,7 +115,8 @@ var LeaderboardUser = ndo.define(io, 'LeaderboardUser', {
   }
 });
 
-var tool = {
+var tool1 = {
+  'Id': "fisktool",
   'Name': "A tool"
 };
 var SubTask = ndo.define(io, 'SubTask', {
@@ -102,8 +128,8 @@ var SubTask = ndo.define(io, 'SubTask', {
       'IsBonus': false,
       'Xp': 60,
       'Information': "Info about subtask",
-      'Warning': "Warning!",
-      'Tools': [tool]
+      'Warning': "Warning! dsadas",
+      'Tools': [tool1, tool1, tool1]
     });
   },
   list: function(d, callback) {
@@ -124,11 +150,10 @@ var Task = ndo.define(io, 'Task', {
       'Description': 'A description for a Task',
       'TotalXp': 60,
       'RawLocation': vector,
-      'IsBonus': false,
-      'Tools': [],
+      'Tools': [tool1, tool1],
       'UserId': null,
       'Hints': [],
-      'SubTasks': []
+      'SubTasks': [subtask1, subtask1, subtask1]
     });
   },
   list: function(d, callback) {
@@ -143,7 +168,7 @@ var User = ndo.define(io, 'User', {
       'UserIcon': 1,
       'Name': 'Swag user',
       'DailyScore': 10,
-      'TotalScore': 20,
+      'TotalScore': 27,
       'TotalLevel': 5,
       'Badges': [badge1,badge2],
       'Achievements': [achivement1,achivement2]
@@ -154,10 +179,24 @@ var User = ndo.define(io, 'User', {
   }
 });
 
+var Tools = ndo.define(io, 'Tools', {
+  get: function(id, callback) {
+    callback({
+      'Id': "fisk",
+      'Name': "Verktyg 1"
+    });
+  },
+  list: function(d, callback) {
+    callback(['fisk']);
+  }
+});
+
 io.on('connection', function(socket) {
   User.serve(socket);
   SubTask.serve(socket);
   Achievement.serve(socket);
   Badge.serve(socket);
   Task.serve(socket);
+  Leaderboard.serve(socket);
+  Tools.serve(socket);
 });
