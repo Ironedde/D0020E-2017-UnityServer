@@ -10,6 +10,32 @@ var ndo = require('./network_data_object').NetworkDataObject;
 
 // The *sigh* global clients object
 var clients = {};
+clients.swag = {x:1,y:1,z:1}
+var predefined_path = {
+	"0": {x:1,y:1,z:1},
+	"1": {x:2,y:1,z:2},
+	"2": {x:5,y:1,z:3},
+	"3": {x:5,y:1,z:14},
+	"4": {x:16,y:1,z:6},
+	"5": {x:22,y:1,z:11},
+	"6": {x:33,y:1,z:11.5},
+	"7": {x:31.5,y:1,z:7},
+	"8": {x:37,y:1,z:12},
+	"9": {x:41,y:1,z:9},
+	"10": {x:41,y:1,z:4},
+	"11": {x:41,y:1,z:11},
+	"12": {x:47,y:1,z:8},
+	"13": {x:47,y:1,z:11},
+	"14": {x:40,y:1,z:11.5},
+	"15": {x:28,y:1,z:11.5},
+	"16": {x:20,y:1,z:11.5},
+	"17": {x:10,y:1,z:11.5},
+	"18": {x:4.5,y:1,z:9},
+	"19": {x:4.5,y:1,z:3},
+	"20": {x:1,y:1,z:1},
+	"21": {x:1,y:1,z:1}
+}
+var counter = -1;
 
 app.set('views', path.join(__dirname, 'views')); // Set up the pathing to the views folder
 app.set('view engine', 'jade');
@@ -32,12 +58,21 @@ var Person = ndo.define(io, "Person", {
         /*if (typeof param == "undefined" || param == null || !(param in clients)) {
             id = this.id;
         }*/
+		if (cb){
         console.log(id)
-        var c = clients[id];
-        cb({
-          'Id':id,
-          'RawLocation':{'X':c.x,'Y':c.y,'Z':c.z}
-        });
+					if (id == "swag"){
+						counter += 1;
+						if (counter > 21){
+							counter = 0;
+						}
+						clients[id] = predefined_path[counter.toString()];
+					}
+					var c = clients[id];
+        	cb({
+          	'Id':id,
+          	'RawLocation':{'X':c.x,'Y':c.y,'Z':c.z}
+        	});
+		}
     },
     list: function(id, cb) { // same as the old "positions" call
         var arr = []
@@ -74,7 +109,7 @@ var Person = ndo.define(io, "Person", {
 io.on('connection', function(socket){
     console.log('a user connected: ' + socket.id);
 
-    clients[socket.id] = {x:0,y:2,z:1}; // Will use socket id as the identifier for the clients. simple enough.
+    clients[socket.id] = {x:1,y:1,z:1}; // Will use socket id as the identifier for the clients. simple enough.
 
     socket.on('disconnect', function() { // remove the disconnected client
         console.log(socket.id + " disconnected");
