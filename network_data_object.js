@@ -11,13 +11,9 @@ var ndo = {
       },
       serve: function(socket) {
         //Added by edvin
-        socket.on(name + ".you", objs.you || function() {});
-        //
-        socket.on(name + ".get", objs.get || function() {});
-        socket.on(name + ".list", objs.list || function() {});
-        socket.on(name + ".create", objs.create || function() {});
-        socket.on(name + ".update", objs.update || function() {});
-        socket.on(name + ".delete", objs.delete || function() {});
+        for (key in objs) {
+           socket.on(name + "." + key, objs[key] || function () {});
+        }
       }
     }
   }
