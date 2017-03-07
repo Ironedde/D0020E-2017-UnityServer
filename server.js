@@ -30,6 +30,22 @@ var Person = ndo.define(io, 'Person', {
   }
 });
 
+var streams = {};
+var ImageStream = ndo.define(io, 'ImageStream', {
+  update: function(data, callback) {
+    streams[data.Id] = data;
+    if(data.Image != null) {
+      ImageStream.update(data);
+    }
+  },
+  list: function(q, callback) {
+    callback(streams.keys());
+  },
+  get: function(id, callback) {
+    callback(streams[id]);
+  }
+});
+
 io.on('connection', function(socket) {
   Task.serve(socket);
   Person.serve(socket);
