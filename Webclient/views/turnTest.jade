@@ -1,0 +1,43 @@
+extends layout
+
+block content
+    script(src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js")
+    script(src="/javascripts/tester.js")
+    h1= title
+    div
+        p
+            |TURN URL:
+        input(id="url",placeholder="example.com",value="turn.hw.fail")
+        p
+            |Port:
+        input(type="number",value=3478,id="port",placeholder="enter a port number")
+
+    div
+        p
+            |Transport:
+            input(type="radio" name="transport" id="tcp" value="tcp")
+            |TCP
+            input(type="radio" name="transport" id="udp" value="udp" checked)
+            |UDP
+
+
+    div
+        p
+            |UserName:
+            input(id="name",placeholder="turn username",value="turnuser")
+
+        p
+            |Password:
+            input(id="pass",placeholder="turn password")
+
+
+    div
+        p
+            |checking Timeout:
+            input(type='number'  id="time" placeholder="wait time  before checking timeout" value=5000)
+
+    div
+        button(id='button')
+            Check Turn Server
+
+    h4(id='result')
