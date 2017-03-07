@@ -2,14 +2,13 @@ extends layout
 
 block content
   script(src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js")
-  script(src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.3/socket.io.js")
-  script(src="/javascripts/socketTest.js")
+  script(src="/socket.io/socket.io.js")
   .container
     .row
       .col-md-6.col-sm-12
-        div(style="height:480px")
-        canvas#imageHere(width='640', height='480', style='position: absolute; left: 0; top: 0; z-index: 0;')
-        canvas#drawHere(width='640', height='480', style='position: absolute; left: 0; top: 0; z-index: 1;')
+        div(style="height:800px")
+        canvas#imageHere(width='480', height='800', style='position: absolute; left: 0; top: 0; z-index: 0;')
+        canvas#drawHere(width='480', height='800', style='position: absolute; left: 0; top: 0; z-index: 1;')
     .row
       .col-md-3
         div#log(style="border: 2px solid #bbb;background: #f1f1f1;width:100%;height:200px;overflow: auto")
@@ -31,6 +30,7 @@ block content
     var drawPlane = document.getElementById("drawHere");
     var draw_ctx = drawPlane.getContext("2d");
 
+    var socket = io.connect("127.0.0.1:3001");
 
 
     //image.style.width = drawPlane.style.width = '100%';
@@ -45,11 +45,12 @@ block content
     imageObj.onload = function(){
         image_ctx.drawImage(imageObj,0,0);
     }
-    imageObj.src = 'http://www.just4cats.org/images/cats_012.jpg';
+    socket.on("RemoteSupportStream.update", function(data) {
+      imageObj.src = "data:image/png;base64," + data.Image;
+    });
 
-
-    draw_ctx.fillStyle = "rgba(0, 90, 255, 0.63)";
-    draw_ctx.fillRect(0, 0, 640, 480);
+    draw_ctx.fillStyle = "rgba(0, 90, 255, 0.02)";
+    draw_ctx.fillRect(0, 0, 480, 800);
 
     /////////////////////////////
     var canvas, ctx, flag = false,
@@ -82,99 +83,62 @@ block content
         canvas.addEventListener("mouseout", function (e) {
             findxy('out', e)
         }, false);
-        console.log("setting up subscription");
-        signalingChannel.onSubscription = function(data) {
-            ctx.beginPath();
-            ctx.moveTo(data.prevX * w, data.prevY * h);
-            ctx.lineTo(data.currX * w, data.currY * h);
-            ctx.strokeStyle = x;
-            ctx.lineWidth = y;
-            ctx.stroke();
-            ctx.closePath();
-        };
     }
-
+    var mouseData = {
+      Id: "mouse1",
+      Down: false,
+      Position: {
+        X: 0,
+        Y: 0,
+        Z: 0
+      }
+    };
     function findxy(res, e) {
-
         var rect = drawPlane.getBoundingClientRect();
         var clickX = e.clientX - rect.left;
         var clickY = e.clientY - rect.top;
 
-         if (res == 'down') {
-            $("#logEntries").append("<li>> (++:++) Clicked ["+(clickX)+","+(clickY)+"]</li>")
-            prevX = currX;
-            prevY = currY;
-            currX = clickX;
-            currY = clickY;
-
-            flag = true;
-            dot_flag = true;
-            if (dot_flag) {
-                ctx.beginPath();
-                ctx.fillStyle = x;
-                ctx.fillRect(currX, currY, 2, 2);
-                ctx.closePath(); // Once again, translate so that the target coordinate system is within [0, 1]
-                signalingChannel.addLine(currX / w, currY / h, (currX+2) / w, (currY+2) / h);
-                dot_flag = false;
-            }
+        if (res == 'down') {
+          mouseData.Down = true;
         }
-        if (res == 'up' || res == "out") {
-            flag = false;
+        if (res == 'up')
+        {
+            mouseData.Down = false;
         }
         if (res == 'move') {
-            if (flag) {
-                prevX = currX;
-                prevY = currY;
-                currX = clickX;
-                currY = clickY;
-                draw();
-            }
+            mouseData.Position.X = clickX;
+            mouseData.Position.Y = clickY;
         }
-    }
-
-    function draw() {
-        ctx.beginPath();
-        ctx.moveTo(prevX, prevY);
-        ctx.lineTo(currX, currY);
-        ctx.strokeStyle = x;
-        ctx.lineWidth = y;
-        ctx.stroke();
-        ctx.closePath(); // Translate coordinates to fit the [0, 1] range
-        signalingChannel.addLine(prevX / w, prevY / h, currX / w, currY / h);
+        socket.emit("RemoteSupportMouse.update", mouseData);
     }
 
     function connectButtonClick() {
         var d = $("#clients").val();
         console.log(d);
-        signalingChannel.subscribe(d);
+        socket.emit("RemoteSupportStream.get", d);
 
     }
     function refreshButtonClick() {
-      signalingChannel.getAvailableUsers();
+      refreshClientList();
       window.setTimeout(function () {
           refreshClientList();
       }, 2000);
     }
     function refreshClientList(){
-        document.getElementById("your-id").innerHTML = signalingChannel.myID;
         var clients = document.getElementById("clients");
         while (clients.firstChild) {
             clients.removeChild(clients.firstChild);
         }
-        signalingChannel.clients.forEach(function(item,index){
+        socket.emit("RemoteSupportStream.list", null, function(ids) {
+          for(var i in ids) {
             var option = document.createElement("option");
-            option.text = item;
-            option.value = item;
+            option.text = ids[i];
+            option.value = ids[i];
             document.getElementById("clients").appendChild(option);
+          }
         });
 
     }
     $(document).ready(function () {
         init();
-        signalingChannel.makePublisher();
-        signalingChannel.onNewClient = function (e) {
-            refreshClientList();
-            //alert(e.message);
-        }
-        refreshButtonClick();
     });
