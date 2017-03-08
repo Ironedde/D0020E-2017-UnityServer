@@ -206,7 +206,7 @@ var RemoteSupportStream = ndo.define(io, 'RemoteSupportStream', {
     }
   },
   list: function(q, callback) {
-    callback(Object.keys(streams));
+    callback(Object.keys(streams).filter(function(v) { return streams[v].Streaming; }));
   },
   get: function(id, callback) {
     RemoteSupportStream.subscribe(this, id);
