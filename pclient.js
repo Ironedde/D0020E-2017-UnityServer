@@ -26,7 +26,7 @@ stdin.setEncoding( 'utf8' );
 
 // on any data into stdin
 stdin.on( 'data', function( key ) {
-    var translation = {x: 0, y: 0}
+    var translation = {x: 0, y: 0, z:0}
     var amt = 1; // Amount to increase the translation upon key press
 
     // ctrl-c ( end of text )
