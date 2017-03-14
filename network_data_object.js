@@ -10,11 +10,10 @@ var ndo = {
         socket.join(name + "." + id);
       },
       serve: function(socket) {
-        socket.on(name + ".get", objs.get || function() {});
-        socket.on(name + ".list", objs.list || function() {});
-        socket.on(name + ".create", objs.create || function() {});
-        socket.on(name + ".update", objs.update || function() {});
-        socket.on(name + ".delete", objs.delete || function() {});
+        //Added by edvin
+        for (key in objs) {
+           socket.on(name + "." + key, objs[key] || function () {});
+        }
       }
     }
   }

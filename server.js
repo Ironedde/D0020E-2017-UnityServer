@@ -1,7 +1,13 @@
 var http = require('http');
 var ndo = require('./network_data_object').NetworkDataObject;
 
-var io = require('socket.io').listen(3001);
+var app = require('./Webclient/app');
+var server = http.createServer(app);
+
+var io = require('socket.io');
+io = io.listen(server);
+io.set('log level',0);
+server.listen(3001);
 console.log("starting server");
 
 
@@ -191,6 +197,39 @@ var Tools = ndo.define(io, 'Tools', {
   }
 });
 
+var streams = {};
+var RemoteSupportStream = ndo.define(io, 'RemoteSupportStream', {
+  update: function(data, callback) {
+    streams[data.Id] = data;
+    if(data.Image != null) {
+      RemoteSupportStream.update(data);
+    }
+  },
+  list: function(q, callback) {
+    callback(Object.keys(streams).filter(function(v) { return streams[v].Streaming; }));
+  },
+  get: function(id, callback) {
+    RemoteSupportStream.subscribe(this, id);
+    if(callback) callback(streams[id]);
+  },
+  delete: function(id, callback) {
+
+    this.leave("RemoteSupportStream." + id);
+  }
+});
+
+var mice = {};
+var RemoteSupportMouse = ndo.define(io, 'RemoteSupportMouse', {
+  update: function(data, callback) {
+    mice[data.Id] = data;
+    RemoteSupportMouse.update(data);
+  },
+  get: function(id, callback) {
+    RemoteSupportMouse.subscribe(this, id);
+    callback(mice[id]);
+  }
+});
+
 io.on('connection', function(socket) {
   User.serve(socket);
   SubTask.serve(socket);
@@ -199,4 +238,6 @@ io.on('connection', function(socket) {
   Task.serve(socket);
   Leaderboard.serve(socket);
   Tools.serve(socket);
+  RemoteSupportStream.serve(socket);
+  RemoteSupportMouse.serve(socket);
 });

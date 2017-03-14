@@ -1,0 +1,144 @@
+extends layout
+
+block content
+  script(src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js")
+  script(src="/socket.io/socket.io.js")
+  .container
+    .row
+      .col-md-6.col-sm-12
+        div(style="height:800px")
+        canvas#imageHere(width='480', height='800', style='position: absolute; left: 0; top: 0; z-index: 0;')
+        canvas#drawHere(width='480', height='800', style='position: absolute; left: 0; top: 0; z-index: 1;')
+    .row
+      .col-md-3
+        div#log(style="border: 2px solid #bbb;background: #f1f1f1;width:100%;height:200px;overflow: auto")
+          ul#logEntries(style="list-style-type: none;padding-left:0px")
+      .col-md-9
+        .row
+          button#connect(onclick="connectButtonClick()") connect
+          button#refrash(onclick="refreshButtonClick()") refresh
+          b Your ID:
+          a#your-id
+        .row
+          select#clients(name="clients")
+
+
+
+  script.
+    var image = document.getElementById("imageHere");
+    var image_ctx = image.getContext("2d");
+    var drawPlane = document.getElementById("drawHere");
+    var draw_ctx = drawPlane.getContext("2d");
+
+    var socket = io.connect("127.0.0.1:3001");
+
+
+    //image.style.width = drawPlane.style.width = '100%';
+    //image.style.height = drawPlane.style.height = '200px';
+
+    //image.width = image.offsetWidth;
+    //drawPlane.height = drawPlane.offsetHeight;
+
+    image_ctx.font = draw_ctx.font = "12px Arial";
+
+    var imageObj = new Image();
+    imageObj.onload = function(){
+        image_ctx.drawImage(imageObj,0,0);
+    }
+    socket.on("RemoteSupportStream.update", function(data) {
+      imageObj.src = "data:image/png;base64," + data.Image;
+    });
+
+    draw_ctx.fillStyle = "rgba(0, 90, 255, 0.02)";
+    draw_ctx.fillRect(0, 0, 480, 800);
+
+    /////////////////////////////
+    var canvas, ctx, flag = false,
+        prevX = 0,
+        currX = 0,
+        prevY = 0,
+        currY = 0,
+        dot_flag = false;
+
+    var x = "white",
+        y = 2;
+
+    var w = 0, h = 0;
+
+    function init() {
+        canvas = drawPlane;
+        ctx = draw_ctx;
+        w = canvas.width;
+        h = canvas.height;
+
+        canvas.addEventListener("mousemove", function (e) {
+            findxy('move', e)
+        }, false);
+        canvas.addEventListener("mousedown", function (e) {
+            findxy('down', e)
+        }, false);
+        canvas.addEventListener("mouseup", function (e) {
+            findxy('up', e)
+        }, false);
+        canvas.addEventListener("mouseout", function (e) {
+            findxy('out', e)
+        }, false);
+    }
+    var mouseData = {
+      Id: "mouse1",
+      Down: false,
+      Position: {
+        X: 0,
+        Y: 0,
+        Z: 0
+      }
+    };
+    function findxy(res, e) {
+        var rect = drawPlane.getBoundingClientRect();
+        var clickX = e.clientX - rect.left;
+        var clickY = e.clientY - rect.top;
+
+        if (res == 'down') {
+          mouseData.Down = true;
+        }
+        if (res == 'up')
+        {
+            mouseData.Down = false;
+        }
+        if (res == 'move') {
+            mouseData.Position.X = clickX;
+            mouseData.Position.Y = clickY;
+        }
+        socket.emit("RemoteSupportMouse.update", mouseData);
+    }
+
+    function connectButtonClick() {
+        var d = $("#clients").val();
+        console.log(d);
+        socket.emit("RemoteSupportStream.get", d);
+
+    }
+    function refreshButtonClick() {
+      refreshClientList();
+      window.setTimeout(function () {
+          refreshClientList();
+      }, 2000);
+    }
+    function refreshClientList(){
+        var clients = document.getElementById("clients");
+        while (clients.firstChild) {
+            clients.removeChild(clients.firstChild);
+        }
+        socket.emit("RemoteSupportStream.list", null, function(ids) {
+          for(var i in ids) {
+            var option = document.createElement("option");
+            option.text = ids[i];
+            option.value = ids[i];
+            document.getElementById("clients").appendChild(option);
+          }
+        });
+
+    }
+    $(document).ready(function () {
+        init();
+    });

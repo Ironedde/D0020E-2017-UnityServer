@@ -1,0 +1,123 @@
+//
+    This is the main test file of the server. It is designed to have controls that directly modify the position
+    of a spoofed client.
+doctype html
+html
+    head
+        title= title
+    body
+        p Använd WASD för att flytta runt
+        p Nuvarande translation:
+            span  x=
+                span#x 0
+            span  z=
+                span#y 0
+        form#position
+            label x=
+            input(type='number', id='px')
+            br
+            br
+            label y=
+            input(type='number', id='py')
+            br
+            br
+            label z=
+            input(type='number', id='pz')
+            br
+            br
+            button(type='submit') Submit
+            br
+            br
+        form#currpos Nuvarande position:
+            span x=
+                span#cx 0
+            span  y=
+                span#cy 0
+            span  z=
+                span#cz 0
+            br
+            br
+            button(type='submit') Hämta position
+            br
+            br
+        form#submitmessage
+            textarea(id='ta', placeholder='Ditt meddelande', rows='10', cols='40')
+            br
+            label Till:
+            select(id='cclients', style='min-width: 150px; margin-bottom: 0.5cm; margin-right: 0.5cm;')
+            button(id='getclients') Hämta klienter
+            br
+            button(type='submit') Skicka meddelande
+            br
+            br
+        h3#msgbox
+        p#from
+        script(src='/socket.io/socket.io.js')
+        script(src='http://code.jquery.com/jquery-1.11.1.js')
+        script.
+            var connectionId = "";
+            var io = io.connect(window.location.origin);
+            io.on('message', function(arg) {
+                console.log(arg);
+                $("#msgbox").html(arg.msg);
+                $("#from").html(arg.from);
+            });
+            $(document).ready(function(){
+              io.emit("Person.you",{},function (data){
+                connectionId = data[0];
+                console.log(data[0]);
+              });
+            });
+            $(document).keydown(function(event){
+                var tr = {x:0,y:0,z:0};
+                var amt = 1;
+                if (event.key == "w") {
+                    tr.z += amt;
+                } else if (event.key == "a") {
+                    tr.x -= amt;
+                } else if (event.key == "s") {
+                    tr.z -= amt;
+                } else if (event.key == "d") {
+                    tr.x += amt;
+                }
+                $("#x").html(tr.x);
+                $("#y").html(tr.z);
+                io.emit('translate', tr, function() {});
+                //io.emit('get Position', {});
+            });
+            $('#position').submit(function () {
+                io.emit('Person.update', {id:connectionId,x:Number($("#px").val()), y:Number($("#py").val()), z:Number($("#pz").val())},
+                function() {
+                    console.log("Update recived");
+                    // Do something, anything.
+                });
+                return false;
+            });
+            $("#currpos").submit(function() {
+                io.emit('Person.get', connectionId, function (data) {
+                    $("#cx").html(data["RawLocation"].X); // TODO: Make some error checking?
+                    $("#cy").html(data["RawLocation"].Y);
+                    $("#cz").html(data["RawLocation"].Z);
+                });
+                return false;
+            });
+            $("#getclients").click(function (arg) {
+                console.log("click happened");
+                io.emit('get clients', {}, function (asd) {
+                    console.log(asd);
+                    var clients = asd.clients;
+                    $("#cclients").html('<option value="" selected>&lt;ALLA&gt;</option>');
+                    for (i = 0; i < clients.length; i++) {
+                        $("#cclients").append('<option value="' + clients[i] + '">' + clients[i] + '</option>');
+                    }
+                });
+                return false;
+            });
+            $("#submitmessage").submit(function() {
+                var message = {msg: $("#ta").val()};
+                if ($("#cclients").val() != "") {
+                    message.to = $("#cclients").val();
+                }
+                io.emit('send message', message);
+                return false;
+            });

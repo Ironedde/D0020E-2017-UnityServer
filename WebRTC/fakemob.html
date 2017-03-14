@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>Phoney</title>
+        <script type="text/javascript" src="util.js"></script>
+    </head>
+    <body>
+    <h1>WebRTC and stuff</h1>
+    <div style="position:relative">
+     <canvas style="width: 400px; height: 300px; position:absolute; top:0; left:0;" id="can"></canvas>
+     <video id="myVid" autoplay="true" style="width: 400px; height: 300px;">
+     </video>
+    </div>
+    <!-- Allt under denna rad bör vara scripts... -->
+    <script>
+        var userMedia = undefined;
+        if (hasGetUserMedia()) {
+            userMedia = getUserMedia();
+            userMedia = navigator.mediaDevices.getUserMedia({audio:true, video:true}).then(function(stream) {
+                console.log("Creating stream...");
+                var video = document.querySelector("#myVid");
+                video.src = window.URL.createObjectURL(stream);
+                video.play();
+            }).catch(function (err) {
+                console.log("Något gick snett:");
+                console.log(err);
+            });
+            console.log(userMedia);
+        } else {
+            alert("Du kan nog inte använda WebRTC på din browser...");
+        }
+
+        var canvas = document.getElementById("can");
+        var ctx = canvas.getContext("2d");
+        ctx.fillStyle = "rgba(255, 160, 20, 0.5)";
+        ctx.fillRect(0, 0, 300, 400);
+
+    </script>
+    </body>
+</html>
