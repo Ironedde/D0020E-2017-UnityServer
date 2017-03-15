@@ -42,3 +42,5 @@ Gör gärna så att positions.js inte bara är en stubb-fil, utan innehåller at
 
 ### Övriga exempel
 Dessa kan finnas i projekrapporten.
+
+(Läs även Webclient/readme.md för info om hur video länken funkar)
