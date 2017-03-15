@@ -180,8 +180,7 @@ io.on('connection', function(socket){
 // http backend if everything goes to shit with WebSockets in Unity
 app.get('/positions', function(req, res) {
     res.status(200); // HTTP OK
-    res.setHeader("Content-Type","application/json");
-    res.send(JSON.stringify(clients));
+	res.json(clients);
 });
 
 // A dummy client for web users, probably preferred to the console-based client

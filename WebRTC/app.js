@@ -14,8 +14,7 @@ process.argv.forEach(function (val, index, array) { // Just set the current port
 // http backend if everything goes to shit with WebSockets in Unity
 app.get('/positions', function(req, res) {
     res.status(200); // HTTP OK
-    res.setHeader("Content-Type","application/json");
-    res.send(JSON.stringify(clients));
+	res.json(clients)
 });
 
 app.get(/^(.+)$/, function(req, res){
